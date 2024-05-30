@@ -1,0 +1,91 @@
+
+JAVA KİLİTLENME ÖRNEĞİ    
+           
+
+class A implements Runnable                               class B implements Runnabl
+{                                                         {
+  private Lock first, second;                               private Lock first, second;
+public A(Lock first, Lock second){                        public A(Lock first, Lock second){                         
+   this.first = first;                                       this.first = first;
+   this.second = second;                                     this.second = second;
+}                                                            }
+public void run(){                                           public void run(){
+  try{                                                        try{
+    first.lock();                                               second.lock();
+    // do something                                             // do something
+     second.lock();                                             first.lock();
+    //do something else                                         //do something else
+     }                                                            }
+    finally {                                                  finally {
+       first.unlock();                                          second.unlock();
+       second.unlock();                                         first.unlock();
+    }                                                             }
+  }                                                             }
+}                                                             }
+          
+          Thread A                                               Thread B
+
+
+
+                       public static void main(String arg[]) {
+                         Lock lockX = new ReentrantLock();
+                         Lock lockY = new ReentrantLock();
+                         
+                         Thread threadA = new Thread(new A(lockX,lockY)
+                         Thread threadB = new(new B(lockX,lockY)
+
+                         threadA.start();
+                         threadB.start();
+                        }
+
+
+
+        Eğer aşağıdaki snearyo gerçekleşirse kilitlenme mümkün:
+            threadA -> lockY -> threadB -> lockX -> threadA     
+
+
+
+MUTUAL EXCLUSİON ÖRNEĞİ
+
+
+import threading
+
+# Paylaşılan değişken
+shared_variable = 0
+
+# Mutex (karşılıklı dışlama) semaforu
+mutex = threading.Lock()
+
+# İşlemcilerin paylaşılan değişken üzerinde çalıştığı fonksiyon
+def operate_shared_variable():
+    global shared_variable
+    for _ in range(1000000):
+        mutex.acquire()  # Kritik bölgeye girmeden önce kilit alınır
+        shared_variable += 1
+        mutex.release()  # Kritik bölge işlemi bittiğinde kilidi serbest bırak
+
+# İki farklı işlemciyi simüle etmek için iki iş parçacığı oluşturulur
+thread1 = threading.Thread(target=operate_shared_variable)
+thread2 = threading.Thread(target=operate_shared_variable)
+
+# İş parçacıklarını başlatma
+thread1.start()
+thread2.start()
+
+# İş parçacıklarının bitmesini bekler
+thread1.join()
+thread2.join()
+
+# Paylaşılan değişkenin son değeri yazdırılır
+print("Son değer: ", shared_variable)
+
+
+
+
+Bu örnek, iki işlemcinin operate_shared_variable fonksiyonunu çağırarak shared_variable'ı artırmasını sağlar. threading.Lock() kullanılarak, her bir işlemcinin kritik bölgeye (paylaşılan değişkeni değiştirme) sırayla erişmesi sağlanır. Böylece aynı anda iki işlemcinin aynı değişkeni değiştirmesi engellenir ve son değer beklenen bir artış gösterir.
+
+
+
+
+
+
